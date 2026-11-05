@@ -42,8 +42,5 @@ jobs:
         with:
           context: Desafio4/aplicacao
           push: true
-          build-args: |
-            GH_PACKAGES_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          tags: |
-            ghcr.io/${{ github.repository }}/api-pedidos:latest
-            ghcr.io/${{ github.repository }}/api-pedidos:${{ github.sha }}
+          build-args: GH_PACKAGES_TOKEN=${{ secrets.GITHUB_TOKEN }}
+          tags: ghcr.io/${{ github.repository }}/api-pedidos:latest && ghcr.io/${{ github.repository }}/api-pedidos:${{ github.sha }}
