@@ -1,0 +1,58 @@
+name: Run and test Docker image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  IMAGE_NAME: ghcr.io/moialc12102/treinamento-actions-desafio-4/api-pedidos
+  IMAGE_TAG: latest
+  CONTAINER_NAME: api-pedidos-test
+  ALUNO: ${{ vars.nome_aluno }}
+
+jobs:
+  test-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Baixar imagem publicada
+        run: docker pull "${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Executar container
+        run: docker run -d \
+            --name "${CONTAINER_NAME}" \
+            -p 3000:3000 \
+            -e NOME_ALUNO="${ALUNO}" \
+            "${IMAGE_NAME}:${IMAGE_TAG}"
+
+      - name: Aguardar aplicação e testar resposta
+        run: set -euo pipefail
+
+          for attempt in {1..15}; do
+            if curl -fsS http://localhost:3000/ > resposta.txt; then
+              break
+            fi
+
+            sleep 2
+          done
+
+          cat resposta.txt
+          grep -F "= ${ALUNO}" resposta.txt
+
+      - name: Exibir logs em caso de falha
+        if: failure()
+        run: docker logs "${CONTAINER_NAME}"
+
+      - name: Remover container
+        if: always()
+        run: docker rm -f "${CONTAINER_NAME}" || trues
