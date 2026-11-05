@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 permissions:
   contents: read
-  packages: read
+  packages: write
 
 jobs:
   build:
@@ -18,7 +18,11 @@ jobs:
 
       - name: Generate lockfile
         working-directory: Desafio4/aplicacao
+        with:
+          env:
+            NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: npm install --package-lock-only --ignore-scripts
+        
 
       - name: install dependencies
         working-directory: Desafio4/aplicacao
